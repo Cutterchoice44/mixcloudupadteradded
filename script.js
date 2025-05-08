@@ -61,7 +61,10 @@ async function loadArchives() {
           <iframe class="mixcloud-iframe"
             src="https://www.mixcloud.com/widget/iframe/?hide_cover=1&light=1&feed=${feed}"
             loading="lazy"></iframe>
-          <button class="delete-btn" onclick="deleteMixcloud(${idx})">×</button>
+          <a href="#" class="remove-link"
+            onclick="deleteMixcloud(${idx});return false;">
+            Remove show
+          </a>
         </div>`;
     }).join('');
   } catch (err) {
@@ -146,12 +149,14 @@ async function fetchWeeklySchedule() {
       return;
     }
     const byDay = schedules.reduce((acc, ev) => {
-      const day = new Date(ev.startDateUtc).toLocaleDateString('en-GB',{ weekday: 'long', day: 'numeric', month: 'short'});
+      const day = new Date(ev.startDateUtc)
+        .toLocaleDateString('en-GB',{ weekday: 'long', day: 'numeric', month: 'short' });
       (acc[day] = acc[day] || []).push(ev);
       return acc;
     }, {});
     container.innerHTML = '';
-    const fmtTime = iso => new Date(iso).toLocaleTimeString('en-GB',{ hour: '2-digit', minute: '2-digit'});
+    const fmtTime = iso => new Date(iso)
+      .toLocaleTimeString('en-GB',{ hour: '2-digit', minute: '2-digit' });
     Object.entries(byDay).forEach(([day, events]) => {
       const h3 = document.createElement('h3'); h3.textContent = day;
       container.appendChild(h3);
@@ -159,7 +164,8 @@ async function fetchWeeklySchedule() {
       events.forEach(ev => {
         const li = document.createElement('li'); li.style.marginBottom='1rem';
         const wrap = document.createElement('div'); wrap.style.display='flex'; wrap.style.alignItems='center'; wrap.style.gap='8px';
-        const t = document.createElement('strong'); t.textContent = `${fmtTime(ev.startDateUtc)}–${fmtTime(ev.endDateUtc)}`;
+        const t = document.createElement('strong');
+        t.textContent = `${fmtTime(ev.startDateUtc)}–${fmtTime(ev.endDateUtc)}`;
         wrap.appendChild(t);
         const art = ev.metadata?.artwork?.default || ev.metadata?.artwork?.original;
         if (art) {
@@ -168,7 +174,11 @@ async function fetchWeeklySchedule() {
         }
         const span = document.createElement('span'); span.textContent=ev.title; wrap.appendChild(span);
         if (!/archive/i.test(ev.title)) {
-          const a = document.createElement('a'); a.href=createGoogleCalLink(ev.title,ev.startDateUtc,ev.endDateUtc); a.target='_blank'; a.innerHTML='📅'; a.style.cssText='font-size:1.4rem;text-decoration:none;margin-left:6px;'; wrap.appendChild(a);
+          const a = document.createElement('a');
+          a.href = createGoogleCalLink(ev.title,ev.startDateUtc,ev.endDateUtc);
+          a.target = '_blank'; a.innerHTML='📅';
+          a.style.cssText='font-size:1.4rem;text-decoration:none;margin-left:6px;';
+          wrap.appendChild(a);
         }
         li.appendChild(wrap); ul.appendChild(li);
       });
