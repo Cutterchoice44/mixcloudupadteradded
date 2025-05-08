@@ -54,19 +54,34 @@ async function loadArchives() {
     if (!res.ok) throw new Error('Failed to load archives');
     const archives = await res.json();
     const container = document.getElementById('mixcloud-list');
-    container.innerHTML = archives.map((entry, idx) => {
+    container.innerHTML = '';
+
+    // Build each item and prepend so newest appear at top
+    archives.forEach((entry, idx) => {
       const feed = encodeURIComponent(entry.url);
-      return `
-        <div class="mixcloud-item">
-          <iframe class="mixcloud-iframe"
-            src="https://www.mixcloud.com/widget/iframe/?hide_cover=1&light=1&feed=${feed}"
-            loading="lazy"></iframe>
-          <a href="#" class="remove-link"
-            onclick="deleteMixcloud(${idx});return false;">
-            Remove show
-          </a>
-        </div>`;
-    }).join('');
+
+      const item = document.createElement('div');
+      item.className = 'mixcloud-item';
+
+      const iframe = document.createElement('iframe');
+      iframe.className = 'mixcloud-iframe';
+      iframe.src = `https://www.mixcloud.com/widget/iframe/?hide_cover=1&light=1&feed=${feed}`;
+      iframe.loading = 'lazy';
+      item.appendChild(iframe);
+
+      const remove = document.createElement('a');
+      remove.href = '#';
+      remove.className = 'remove-link';
+      remove.textContent = 'Remove show';
+      remove.addEventListener('click', e => {
+        e.preventDefault();
+        deleteMixcloud(idx);
+      });
+      item.appendChild(remove);
+
+      container.prepend(item);
+    });
+
   } catch (err) {
     console.error('Archive load error:', err);
   }
@@ -160,27 +175,45 @@ async function fetchWeeklySchedule() {
     Object.entries(byDay).forEach(([day, events]) => {
       const h3 = document.createElement('h3'); h3.textContent = day;
       container.appendChild(h3);
-      const ul = document.createElement('ul'); ul.style.listStyle='none'; ul.style.padding='0';
+      const ul = document.createElement('ul');
+      ul.style.listStyle = 'none';
+      ul.style.padding = '0';
       events.forEach(ev => {
-        const li = document.createElement('li'); li.style.marginBottom='1rem';
-        const wrap = document.createElement('div'); wrap.style.display='flex'; wrap.style.alignItems='center'; wrap.style.gap='8px';
+        const li = document.createElement('li');
+        li.style.marginBottom = '1rem';
+        const wrap = document.createElement('div');
+        wrap.style.display = 'flex';
+        wrap.style.alignItems = 'center';
+        wrap.style.gap = '8px';
+
         const t = document.createElement('strong');
         t.textContent = `${fmtTime(ev.startDateUtc)}–${fmtTime(ev.endDateUtc)}`;
         wrap.appendChild(t);
+
         const art = ev.metadata?.artwork?.default || ev.metadata?.artwork?.original;
         if (art) {
-          const img = document.createElement('img'); img.src=art; img.alt=`${ev.title} artwork`;
-          img.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:3px;'; wrap.appendChild(img);
+          const img = document.createElement('img');
+          img.src = art;
+          img.alt = `${ev.title} artwork`;
+          img.style.cssText = 'width:30px;height:30px;object-fit:cover;border-radius:3px;';
+          wrap.appendChild(img);
         }
-        const span = document.createElement('span'); span.textContent=ev.title; wrap.appendChild(span);
+
+        const span = document.createElement('span');
+        span.textContent = ev.title;
+        wrap.appendChild(span);
+
         if (!/archive/i.test(ev.title)) {
           const a = document.createElement('a');
-          a.href = createGoogleCalLink(ev.title,ev.startDateUtc,ev.endDateUtc);
-          a.target = '_blank'; a.innerHTML='📅';
-          a.style.cssText='font-size:1.4rem;text-decoration:none;margin-left:6px;';
+          a.href = createGoogleCalLink(ev.title, ev.startDateUtc, ev.endDateUtc);
+          a.target = '_blank';
+          a.innerHTML = '📅';
+          a.style.cssText = 'font-size:1.4rem;text-decoration:none;margin-left:6px;';
           wrap.appendChild(a);
         }
-        li.appendChild(wrap); ul.appendChild(li);
+
+        li.appendChild(wrap);
+        ul.appendChild(li);
       });
       container.appendChild(ul);
     });
@@ -220,7 +253,11 @@ function openChatPopup() {
     window.open(url,'CuttersChatPopup','width=400,height=700,resizable=yes,scrollbars=yes');
   }
 }
-function closeChatModal(){const m=document.getElementById('chatModal'),i=document.getElementById('chatModalIframe');if(m&&i){m.style.display='none';i.src='';}}
+function closeChatModal(){
+  const m=document.getElementById('chatModal'),
+        i=document.getElementById('chatModalIframe');
+  if(m&&i){m.style.display='none';i.src='';}
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 6) INITIALIZATION
@@ -232,7 +269,33 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadArchives();
   setInterval(fetchLiveNow,30000);
   setInterval(fetchNowPlayingArchive,30000);
-  if(isMobile){document.querySelector('.mixcloud')?.remove();}else{document.querySelectorAll('iframe.mixcloud-iframe').forEach(ifr=>{ifr.src=ifr.src||ifr.dataset.src});shuffleIframesDaily();const s=document.createElement('script');s.src='https://widget.mixcloud.com/widget.js';s.async=true;document.body.appendChild(s);}
-  document.getElementById('popOutBtn')?.addEventListener('click',()=>{const src=document.getElementById('inlinePlayer').src;const w=window.open('','CCRPlayer','width=400,height=200,resizable=yes');w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cutters Choice Player</title><style>body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;}iframe{width:100%;height:180px;border:none;border-radius:4px;}</style></head><body><iframe src="${src}" allow="autoplay"></iframe></body></html>`);w.document.close();});
-  const ul=document.querySelector('.rc-user-list');if(ul){new MutationObserver(()=>{Array.from(ul.children).forEach(li=>{if(!li.textContent.trim())li.remove();});}).observe(ul,{childList:true});}
+
+  if(isMobile){
+    document.querySelector('.mixcloud')?.remove();
+  } else {
+    document.querySelectorAll('iframe.mixcloud-iframe').forEach(ifr=>{
+      ifr.src = ifr.src||ifr.dataset.src;
+    });
+    shuffleIframesDaily();
+    const s=document.createElement('script');
+    s.src='https://widget.mixcloud.com/widget.js';
+    s.async=true;
+    document.body.appendChild(s);
+  }
+
+  document.getElementById('popOutBtn')?.addEventListener('click',()=>{
+    const src=document.getElementById('inlinePlayer').src;
+    const w=window.open('','CCRPlayer','width=400,height=200,resizable=yes');
+    w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cutters Choice Player</title><style>body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;}iframe{width:100%;height:180px;border:none;border-radius:4px;}</style></head><body><iframe src="${src}" allow="autoplay"></iframe></body></html>`);
+    w.document.close();
+  });
+
+  const ul = document.querySelector('.rc-user-list');
+  if (ul) {
+    new MutationObserver(()=> {
+      Array.from(ul.children).forEach(li=> {
+        if (!li.textContent.trim()) li.remove();
+      });
+    }).observe(ul, { childList: true });
+  }
 });
