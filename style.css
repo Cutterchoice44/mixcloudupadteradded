@@ -14,7 +14,7 @@
 
   /* ─── Adjustable GIF Settings ─── */
   --gif-height: 270px;     /* Change this to adjust height */
-  --gif-width: 8%;        /* Change this to adjust width */
+  --gif-width: 12%;        /* Change this to adjust width */
   --gif-speed: 12s;        /* Change this to adjust speed */
   --gif-opacity: 1.6;      /* Change this to adjust opacity */
 }
