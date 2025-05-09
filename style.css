@@ -126,7 +126,7 @@ header .title .tagline {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
-  padding: 0.3rem;
+  padding: 0.6rem;
 }
 
 @media (min-width: 600px) {
@@ -135,7 +135,7 @@ header .title .tagline {
   }
   header .logo {
     margin-bottom: 0;
-    margin-right: 1rem;
+    margin-right: 0.7rem;
   }
 }
 
