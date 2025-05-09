@@ -50,12 +50,11 @@ function shuffleIframesDaily() {
 // ─────────────────────────────────────────────────────────────────────────────
 async function loadArchives() {
   try {
-    const res = await fetch('get_archives.php');
+    const res = await fetch('archives.json');
     if (!res.ok) throw new Error('Failed to load archives');
     const archives = await res.json();
     const container = document.getElementById('mixcloud-list');
     container.innerHTML = '';
-
     archives.forEach((entry, idx) => {
       const feed = encodeURIComponent(entry.url);
       const item = document.createElement('div');
@@ -79,7 +78,6 @@ async function loadArchives() {
 
       container.prepend(item);
     });
-
   } catch (err) {
     console.error('Archive load error:', err);
   }
@@ -89,23 +87,17 @@ async function addMixcloud() {
   const input = document.getElementById('mixcloud-url');
   if (!input) return;
   let raw = input.value.trim();
-  if (!raw) return alert('Please paste a valid Mixcloud URL or embed code');
+  if (!raw) return alert('Please paste a valid Mixcloud URL');
 
-  // Extract actual URL if user pasted embed snippet
+  // extract URL from embed code if needed
   let url;
-  const iframeMatch = raw.match(/<iframe[^>]+src=["']([^"']+)["']/i);
-  if (iframeMatch) {
-    url = iframeMatch[1];
-  } else {
-    url = raw;
-  }
-  // Ensure scheme
-  if (!/^https?:\/\//i.test(url)) {
-    url = 'https://' + url;
-  }
-  // Validate Mixcloud domain
+  const match = raw.match(/src=["']([^"']+)["']/i);
+  if (match) url = match[1];
+  else url = raw;
+
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
   if (!/mixcloud\.com\//i.test(url)) {
-    return alert('Please enter a valid Mixcloud URL or embed code');
+    return alert('Please enter a valid Mixcloud URL');
   }
 
   const pw = prompt('Enter archive password:');
@@ -190,7 +182,8 @@ async function fetchWeeklySchedule() {
     Object.entries(byDay).forEach(([day, events]) => {
       const h3 = document.createElement('h3'); h3.textContent = day;
       container.appendChild(h3);
-      const ul = document.createElement('ul'); ul.style.listStyle = 'none'; ul.style.padding = '0';
+      const ul = document.createElement('ul');
+      ul.style.listStyle = 'none'; ul.style.padding = '0';
       events.forEach(ev => {
         const li = document.createElement('li');
         li.style.marginBottom = '1rem';
@@ -262,47 +255,54 @@ function openChatPopup() {
     window.open(url,'CuttersChatPopup','width=400,height=700,resizable=yes,scrollbars=yes');
   }
 }
-function closeChatModal(){
+
+function closeChatModal() {
   const m=document.getElementById('chatModal'),
         i=document.getElementById('chatModalIframe');
-  if(m&&i){m.style.display='none';i.src='';}
+  if (m && i) { m.style.display = 'none'; i.src = ''; }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 6) INITIALIZATION
 // ─────────────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
+  // remove extra chat button under player
+  document.getElementById('chatPopupBtn')?.remove();
+
   fetchLiveNow();
   fetchWeeklySchedule();
   fetchNowPlayingArchive();
   loadArchives();
-  setInterval(fetchLiveNow,30000);
-  setInterval(fetchNowPlayingArchive,30000);
+  setInterval(fetchLiveNow, 30000);
+  setInterval(fetchNowPlayingArchive, 30000);
 
-  if(isMobile){
-    document.querySelector('.mixcloud')?.remove();
-  } else {
-    document.querySelectorAll('iframe.mixcloud-iframe').forEach(ifr=>{
-      ifr.src = ifr.src||ifr.dataset.src;
+  if (isMobile) document.querySelector('.mixcloud')?.remove();
+  else {
+    document.querySelectorAll('iframe.mixcloud-iframe').forEach(ifr => {
+      ifr.src = ifr.src || ifr.dataset.src;
     });
     shuffleIframesDaily();
-    const s=document.createElement('script');
-    s.src='https://widget.mixcloud.com/widget.js';
-    s.async=true;
+    const s = document.createElement('script');
+    s.src = 'https://widget.mixcloud.com/widget.js';
+    s.async = true;
     document.body.appendChild(s);
   }
 
   document.getElementById('addBtn')?.addEventListener('click', addMixcloud);
 
-  document.getElementById('popOutBtn')?.addEventListener('click',()=>{
-    const src=document.getElementById('inlinePlayer').src;
-    const w=window.open('','CCRPlayer','width=400,height=200,resizable=yes');
-    w.document.write(`<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial- scale=1\"><title>Cutters Choice Player</title><style>body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;}iframe{width:100%;height:180px;border:none;border-radius:4px;}</style></head><body><iframe src=\"${src}\" allow=\"autoplay\"></iframe></body></html>`);
+  document.getElementById('popOutBtn')?.addEventListener('click', () => {
+    const src = document.getElementById('inlinePlayer').src;
+    const w = window.open('', 'CCRPlayer', 'width=400,height=200,resizable=yes');
+    w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial- scale=1"><title>Cutters Choice Player</title><style>body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;}iframe{width:100%;height:180px;border:none;border-radius:4px;}</style></head><body><iframe src="${src}" allow="autoplay"></iframe></body></html>`);
     w.document.close();
   });
 
   const ul = document.querySelector('.rc-user-list');
   if (ul) {
-    new MutationObserver(()=> { Array.from(ul.children).forEach(li=> { if (!li.textContent.trim()) li.remove(); }); }).observe(ul, { childList: true });
+    new MutationObserver(() => {
+      Array.from(ul.children).forEach(li => {
+        if (!li.textContent.trim()) li.remove();
+      });
+    }).observe(ul, { childList: true });
   }
 });
