@@ -9,7 +9,41 @@ const MIXCLOUD_PASSWORD = "cutters44";
 const isMobile          = /Mobi|Android/i.test(navigator.userAgent);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2) HELPERS
+// 2) PASSWORD MODAL HELPER
+// ─────────────────────────────────────────────────────────────────────────────
+function askPassword() {
+  return new Promise(resolve => {
+    const modal      = document.getElementById('pwModal');
+    const input      = document.getElementById('archive-pw');
+    const okBtn      = document.getElementById('pwSubmit');
+    const cancelBtn  = document.getElementById('pwCancel');
+    modal.classList.remove('hidden');
+    input.value = '';
+    input.focus();
+
+    function cleanup() {
+      modal.classList.add('hidden');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+    }
+
+    function onOk() {
+      const val = input.value;
+      cleanup();
+      resolve(val);
+    }
+    function onCancel() {
+      cleanup();
+      resolve(null);
+    }
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3) OTHER HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 function createGoogleCalLink(title, startUtc, endUtc) {
   if (!startUtc || !endUtc) return "#";
@@ -35,7 +69,7 @@ function shuffleIframesDaily() {
   const container = document.getElementById("mixcloud-list");
   if (!container) return;
   const iframes = Array.from(container.querySelectorAll("iframe"));
-  const today = new Date().toISOString().split("T")[0];
+  const today   = new Date().toISOString().split("T")[0];
   if (localStorage.getItem("lastShuffleDate") === today) return;
   for (let i = iframes.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -46,7 +80,7 @@ function shuffleIframesDaily() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3) MIXCLOUD ARCHIVE PERSISTENCE
+// 4) MIXCLOUD ARCHIVE PERSISTENCE
 // ─────────────────────────────────────────────────────────────────────────────
 async function loadArchives() {
   try {
@@ -56,10 +90,8 @@ async function loadArchives() {
     const container = document.getElementById('mixcloud-list');
     container.innerHTML = '';
 
-    // Build each item and prepend so newest appear at top
     archives.forEach((entry, idx) => {
       const feed = encodeURIComponent(entry.url);
-
       const item = document.createElement('div');
       item.className = 'mixcloud-item';
 
@@ -93,7 +125,7 @@ async function addMixcloud() {
   const url = input.value.trim();
   if (!url) return alert('Please paste a valid Mixcloud URL');
 
-  const pw = prompt('Enter archive password:');
+  const pw = await askPassword();
   if (pw !== MIXCLOUD_PASSWORD) return alert('Incorrect password');
 
   try {
@@ -113,7 +145,7 @@ async function addMixcloud() {
 }
 
 async function deleteMixcloud(index) {
-  const pw = prompt('Enter archive password:');
+  const pw = await askPassword();
   if (pw !== MIXCLOUD_PASSWORD) return alert('Incorrect password');
 
   try {
@@ -132,7 +164,7 @@ async function deleteMixcloud(index) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4) DATA FETCHERS (Live, Schedule, Now Playing Archive)
+// 5) DATA FETCHERS (Live, Schedule, Now Playing Archive)
 // ─────────────────────────────────────────────────────────────────────────────
 async function fetchLiveNow() {
   try {
@@ -175,16 +207,12 @@ async function fetchWeeklySchedule() {
     Object.entries(byDay).forEach(([day, events]) => {
       const h3 = document.createElement('h3'); h3.textContent = day;
       container.appendChild(h3);
-      const ul = document.createElement('ul');
-      ul.style.listStyle = 'none';
-      ul.style.padding = '0';
+      const ul = document.createElement('ul'); ul.style.listStyle = 'none'; ul.style.padding = '0';
       events.forEach(ev => {
         const li = document.createElement('li');
         li.style.marginBottom = '1rem';
         const wrap = document.createElement('div');
-        wrap.style.display = 'flex';
-        wrap.style.alignItems = 'center';
-        wrap.style.gap = '8px';
+        wrap.style.display = 'flex'; wrap.style.alignItems = 'center'; wrap.style.gap = '8px';
 
         const t = document.createElement('strong');
         t.textContent = `${fmtTime(ev.startDateUtc)}–${fmtTime(ev.endDateUtc)}`;
@@ -199,15 +227,13 @@ async function fetchWeeklySchedule() {
           wrap.appendChild(img);
         }
 
-        const span = document.createElement('span');
-        span.textContent = ev.title;
+        const span = document.createElement('span'); span.textContent = ev.title;
         wrap.appendChild(span);
 
         if (!/archive/i.test(ev.title)) {
           const a = document.createElement('a');
           a.href = createGoogleCalLink(ev.title, ev.startDateUtc, ev.endDateUtc);
-          a.target = '_blank';
-          a.innerHTML = '📅';
+          a.target = '_blank'; a.innerHTML = '📅';
           a.style.cssText = 'font-size:1.4rem;text-decoration:none;margin-left:6px;';
           wrap.appendChild(a);
         }
@@ -242,60 +268,60 @@ async function fetchNowPlayingArchive() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 5) ADMIN & UI ACTIONS
+// 6) ADMIN & UI ACTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 function openChatPopup() {
   const url = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
   if (isMobile) {
-    const m=document.getElementById('chatModal'),i=document.getElementById('chatModalIframe');
-    if(m&&i){i.src=url;m.style.display='flex';}
+    const m = document.getElementById('chatModal'), i = document.getElementById('chatModalIframe');
+    if (m && i) { i.src = url; m.style.display = 'flex'; }
   } else {
-    window.open(url,'CuttersChatPopup','width=400,height=700,resizable=yes,scrollbars=yes');
+    window.open(url, 'CuttersChatPopup', 'width=400,height=700,resizable=yes,scrollbars=yes');
   }
 }
-function closeChatModal(){
-  const m=document.getElementById('chatModal'),
-        i=document.getElementById('chatModalIframe');
-  if(m&&i){m.style.display='none';i.src='';}
+function closeChatModal() {
+  const m = document.getElementById('chatModal'), i = document.getElementById('chatModalIframe');
+  if (m && i) { m.style.display = 'none'; i.src = ''; }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 6) INITIALIZATION
+// 7) INITIALIZATION
 // ─────────────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
   fetchLiveNow();
   fetchWeeklySchedule();
   fetchNowPlayingArchive();
   loadArchives();
-  setInterval(fetchLiveNow,30000);
-  setInterval(fetchNowPlayingArchive,30000);
+  setInterval(fetchLiveNow, 30000);
+  setInterval(fetchNowPlayingArchive, 30000);
 
-  if(isMobile){
+  // Attach new Add Show handler
+  document.getElementById('addBtn')?.addEventListener('click', addMixcloud);
+
+  if (isMobile) {
     document.querySelector('.mixcloud')?.remove();
   } else {
-    document.querySelectorAll('iframe.mixcloud-iframe').forEach(ifr=>{
-      ifr.src = ifr.src||ifr.dataset.src;
+    document.querySelectorAll('iframe.mixcloud-iframe').forEach(ifr => {
+      ifr.src = ifr.src || ifr.dataset.src;
     });
     shuffleIframesDaily();
-    const s=document.createElement('script');
-    s.src='https://widget.mixcloud.com/widget.js';
-    s.async=true;
+    const s = document.createElement('script');
+    s.src = 'https://widget.mixcloud.com/widget.js';
+    s.async = true;
     document.body.appendChild(s);
   }
 
-  document.getElementById('popOutBtn')?.addEventListener('click',()=>{
-    const src=document.getElementById('inlinePlayer').src;
-    const w=window.open('','CCRPlayer','width=400,height=200,resizable=yes');
+  document.getElementById('popOutBtn')?.addEventListener('click', () => {
+    const src = document.getElementById('inlinePlayer').src;
+    const w = window.open('', 'CCRPlayer', 'width=400,height=200,resizable=yes');
     w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cutters Choice Player</title><style>body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;}iframe{width:100%;height:180px;border:none;border-radius:4px;}</style></head><body><iframe src="${src}" allow="autoplay"></iframe></body></html>`);
     w.document.close();
   });
 
   const ul = document.querySelector('.rc-user-list');
   if (ul) {
-    new MutationObserver(()=> {
-      Array.from(ul.children).forEach(li=> {
-        if (!li.textContent.trim()) li.remove();
-      });
+    new MutationObserver(() => {
+      Array.from(ul.children).forEach(li => { if (!li.textContent.trim()) li.remove(); });
     }).observe(ul, { childList: true });
   }
 });
