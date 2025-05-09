@@ -84,17 +84,16 @@
   <section class="mixcloud">
     <h2>Latest Archived Shows</h2>
     <div id="mixcloud-list"></div>
-    <form class="add-mixcloud" autocomplete="off" onsubmit="addMixcloud(); return false;">
+    <div class="add-mixcloud">
       <input
         id="mixcloud-url"
-        name="mmxurl"
         type="text"
         placeholder="Paste Mixcloud URL here…"
         autocomplete="off"
         autocorrect="off"
         autocapitalize="none">
-      <button id="addBtn" type="submit">Add Show</button>
-    </form>
+      <button id="addBtn" type="button" onclick="addMixcloud()">Add Show</button>
+    </div>
   </section>
 </div> <!-- end grid-container -->
 
