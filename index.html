@@ -20,7 +20,7 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-3MSGZZ5QL6"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag(){dataLayer.push(arguments);} 
     gtag('js', new Date());
     gtag('config', 'G-3MSGZZ5QL6');
   </script>
@@ -92,7 +92,7 @@
         autocomplete="off"
         autocorrect="off"
         autocapitalize="none">
-      <button id="addBtn" type="button" onclick="addMixcloud()">Add Show</button>
+      <button id="addBtn" type="button">Add Show</button>
     </div>
   </section>
 </div> <!-- end grid-container -->
@@ -104,7 +104,32 @@
   <a href="#history">History</a>
 </footer>
 
+<!-- JS SCRIPTS -->
 <script src="script.js?v=20250509" defer></script>
 <script src="slideshow.js?v=20250508" defer></script>
+
+<!-- INLINE ARHCIVE UPLOAD HANDLER -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('addBtn');
+    btn.addEventListener('click', () => {
+      const urlInput = document.getElementById('mixcloud-url');
+      const url = urlInput.value.trim();
+      if (!url) return alert('Please paste a valid Mixcloud URL');
+      const pw = prompt('Enter archive password:');
+      if (pw !== 'cutters44') return alert('Incorrect password');
+      // call server
+      const form = new FormData(); form.append('url', url); form.append('password', pw);
+      fetch('add_archive.php', { method: 'POST', body: form })
+        .then(res => res.json().then(data => ({ status: res.ok, data })))
+        .then(({ status, data }) => {
+          if (!status) throw new Error(data.error || 'Add failed');
+          urlInput.value = '';
+          loadArchives();
+        })
+        .catch(err => alert(err.message));
+    });
+  });
+</script>
 </body>
 </html>
