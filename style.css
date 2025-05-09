@@ -356,7 +356,7 @@ section h2 {
 @media (min-width: 769px) {
   .live-player iframe,
   .live-player audio {
-    height: 750px !important;
+    height: 650px !important;
     max-height: 150vh;
   }
 }
