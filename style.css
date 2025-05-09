@@ -172,7 +172,7 @@ header .title h1 {
 }
 /* ─── SECTIONS ────────────────────────────────────────────────────────────── */
 section {
-  background: #222;
+  background: #000;
   border: 2px solid var(--brand-teal);
   border-radius: 6px;
   padding: 0.5rem;
@@ -194,7 +194,7 @@ section h2 {
 
 /* LIVE PLAYER */
 .live-player {
-  background: #222;
+  background: #000;
   border: 2px solid var(--brand-teal);
   border-radius: 6px;
   padding: 0.5rem;
@@ -557,7 +557,7 @@ section h2 {
 }
 /* ─── SECTION FRAMES ────────────────────────────────────────────────────── */
 section {
-  background: #222;
+  background: #000;
   border: 2px solid var(--brand-teal);
   border-radius: 6px;
   padding: 0.5rem;
