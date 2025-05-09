@@ -574,15 +574,15 @@ section {
 @media (min-width: 769px) {
   #slideshow {
     grid-column: 1 / -1 !important;
-    width: 100%       !important;
+    width: 120%       !important;
     max-width: none   !important;
     transform: none   !important;
-    height: 550px     !important;
-    max-height: 100vh  !important;
+    height: 750px     !important;
+    max-height: 120vh  !important;
   }
   /* <— change this: */
   #slideshow > * {
-    height: 100%     !important;
+    height: 120%     !important;
   }
 }
 /* ─── NUDGE CHAT, LIVE ARCHIVE & LATEST ARCHIVES DOWN ─────────────────────── */
@@ -637,7 +637,7 @@ section h2::after {
   }
 /* —————— Restore Teal Border on Slideshow —————— */
 #slideshow {
-  border: 4px solid var(--brand-teal) !important;
+  border: 8px solid var(--brand-teal) !important;
   box-sizing: border-box;  /* ensure the border is included in the element’s size */
 }
 /* ─── Compact Archive Player ─────────────────────────────────────────────── */
