@@ -50,17 +50,14 @@ function shuffleIframesDaily() {
 // ─────────────────────────────────────────────────────────────────────────────
 async function loadArchives() {
   try {
-    // fetch from static JSON file instead of PHP
-    const res = await fetch('archives.json');
+    const res = await fetch('get_archives.php');
     if (!res.ok) throw new Error('Failed to load archives');
     const archives = await res.json();
     const container = document.getElementById('mixcloud-list');
     container.innerHTML = '';
 
-    // Build each item and prepend so newest appear at top
     archives.forEach((entry, idx) => {
       const feed = encodeURIComponent(entry.url);
-
       const item = document.createElement('div');
       item.className = 'mixcloud-item';
 
@@ -91,8 +88,25 @@ async function loadArchives() {
 async function addMixcloud() {
   const input = document.getElementById('mixcloud-url');
   if (!input) return;
-  const url = input.value.trim();
-  if (!url) return alert('Please paste a valid Mixcloud URL');
+  let raw = input.value.trim();
+  if (!raw) return alert('Please paste a valid Mixcloud URL or embed code');
+
+  // Extract actual URL if user pasted embed snippet
+  let url;
+  const iframeMatch = raw.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+  if (iframeMatch) {
+    url = iframeMatch[1];
+  } else {
+    url = raw;
+  }
+  // Ensure scheme
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'https://' + url;
+  }
+  // Validate Mixcloud domain
+  if (!/mixcloud\.com\//i.test(url)) {
+    return alert('Please enter a valid Mixcloud URL or embed code');
+  }
 
   const pw = prompt('Enter archive password:');
   if (pw !== MIXCLOUD_PASSWORD) return alert('Incorrect password');
@@ -283,7 +297,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('popOutBtn')?.addEventListener('click',()=>{
     const src=document.getElementById('inlinePlayer').src;
     const w=window.open('','CCRPlayer','width=400,height=200,resizable=yes');
-    w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cutters Choice Player</title><style>body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;}iframe{width:100%;height:180px;border:none;border-radius:4px;}</style></head><body><iframe src="${src}" allow="autoplay"></iframe></body></html>`);
+    w.document.write(`<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial- scale=1\"><title>Cutters Choice Player</title><style>body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;}iframe{width:100%;height:180px;border:none;border-radius:4px;}</style></head><body><iframe src=\"${src}\" allow=\"autoplay\"></iframe></body></html>`);
     w.document.close();
   });
 
