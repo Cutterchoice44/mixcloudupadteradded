@@ -102,6 +102,7 @@ header .title {
 header .logo {
   height: 180px;
   margin-bottom: 0.3rem;
+    margin-left: 0.7rem; 
 }
 
 header .title {
@@ -135,7 +136,7 @@ header .title .tagline {
   }
   header .logo {
     margin-bottom: 0;
-    margin-right: 0.7rem;
+    margin-right: 0.4rem;
   }
 }
 
