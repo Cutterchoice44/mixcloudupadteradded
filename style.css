@@ -347,7 +347,7 @@ section h2 {
   .chat           { order: 2; }
   .schedule       { order: 3; }
   .mixcloud       { order: 4; display: none !important; }
-  .chat iframe    { height: 650px !important; }
+  .chat iframe    { height: 750px !important; }
   .live-player iframe,
   .live-player audio { height: 110px !important; }
 }
