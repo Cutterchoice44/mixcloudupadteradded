@@ -325,18 +325,15 @@ section h2 {
 @media (max-width: 768px) {
   .live-player iframe,
   .live-player audio {
-
     height: 220px !important;
     max-height: 40vh;
   }
   header {
-
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
   header .logo {
-
     max-width: 180px;
     margin-bottom: 0.5rem;
   }
@@ -416,3 +413,44 @@ section h2 {
 }
 .remove-link:hover { color: #5A8785; text-decoration: #5A8785; }
 
+/* ─── PASSWORD PROMPT MODAL ─────────────────────────────────────────────── */
+/* hidden by default; JS adds .active to show */
+#pwModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.8);
+  z-index: 10000;
+}
+#pwModal.active {
+  display: flex;
+}
+#pwModal .modal-content {
+  background: #000;
+  padding: 1rem;
+  border: 2px solid var(--brand-teal);
+  border-radius: 6px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+#pwModal .modal-content input {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+#pwModal .modal-content button {
+  margin: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--brand-teal);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
